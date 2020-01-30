@@ -21,9 +21,10 @@ public interface OperacionService {
 
 	/*Flux<Operacion> saveOperacionList(List<Operacion> producto);*/
 
-	Flux<OperationCurrentAccount> consultaMovimientos(String dni, String numeroTarjeta);
+	Flux<OperationCurrentAccount> consultaMovimientos(String dni, String numeroTarjeta, String codigo_bancario);
 	
 	Mono<OperationCurrentAccount> saveOperacionCuentaCuenta(OperationCurrentAccount operacion);
 
 	Mono<OperationCurrentAccount> consultaComisiones(Date from, Date to);
+
 }

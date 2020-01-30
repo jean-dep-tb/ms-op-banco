@@ -31,16 +31,17 @@ public class ProductoBancoCreditoClient {
 //			.retrieve().bodyToMono(CurrentAccount.class).log();
 	
 	//producto credito
-	public Mono<CurrentAccount> despositoBancario(Double monto,String cuenta_destino) {
+	public Mono<CurrentAccount> despositoBancario(Double monto,String cuenta_destino,String codigo_bancario_destino) {
 		
 		Map<String, String> pathVariable = new HashMap<String,String>();
 		pathVariable.put("monto",Double.toString(monto));
 		pathVariable.put("numero_cuenta",cuenta_destino);
+		pathVariable.put("codigo_bancario",codigo_bancario_destino);
 		
-		log.info("Actualizando: cuenta origen ---> deposito-credito: "+ cuenta_destino," monto : " + monto);	
+		log.info("Actualizando: cuenta origen ---> deposito-credito: "+ cuenta_destino," monto : " + monto + "banco destino" + codigo_bancario_destino);	
 		
 		return productoBancoCreditoClient.put()
-				   .uri("/pago/{monto}/{numero_cuenta}",pathVariable)
+				   .uri("/pago/{numero_cuenta}/{monto}/{codigo_bancario}",pathVariable)
 				   .accept(MediaType.APPLICATION_JSON)
 				   .contentType(MediaType.APPLICATION_JSON)
 				   .retrieve()

@@ -27,10 +27,30 @@ public class ProductoBancoClient {
 	private WebClient productoBancoClient;
 	
 	//consumir de una cuenta de banco
-	public Mono<CurrentAccount> findByNumeroCuenta(String num) {
+//	public Mono<CurrentAccount> findByNumeroCuenta(String num) {
+//		
+//		Map<String, String> pathVariable = new HashMap<String,String>();
+//		pathVariable.put("numero_cuenta",cuenta_origen);
+//		pathVariable.put("monto",);
+//		
+//		return productoBancoClient.get()
+//				.uri("/numero_cuenta/{num}/{codigo_bancario}",pathVariable)
+//				.accept(MediaType.APPLICATION_JSON)
+//				.retrieve()
+//				.bodyToMono(CurrentAccount.class);
+//		    	
+//	}
+	
+	public Mono<CurrentAccount> findByNumeroCuenta(String num,String codigo_bancario_destino) {
+		
+		log.info("Actualizando: cuenta origen --> retiro --> numTargeta : "+ num + " codigo_bancario_destino : " + codigo_bancario_destino);
+		
+		Map<String, String> pathVariable = new HashMap<String,String>();
+		pathVariable.put("num",num);
+		pathVariable.put("codigo_bancario",codigo_bancario_destino);
 		
 		return productoBancoClient.get()
-				.uri("/numero_cuenta/{num}",Collections.singletonMap("num",num))
+				.uri("/numero_cuenta/{num}/{codigo_bancario}",pathVariable)
 				.accept(MediaType.APPLICATION_JSON)
 				.retrieve()
 				.bodyToMono(CurrentAccount.class);
@@ -45,9 +65,10 @@ public class ProductoBancoClient {
 	
 	//consumir de la cuenta de banco
 	//public Mono<CurrentAccount> retiroBancario(OperationCurrentAccount op) {
-	public Mono<CurrentAccount> retiroBancario(String cuenta_origen,Double monto,Double comision) {
+	public Mono<CurrentAccount> retiroBancario(String cuenta_origen,Double monto,Double comision,String codigo_bancario_destino) {
 		
-		log.info("Actualizando: cuenta origen --> retiro bancario : "+ cuenta_origen + " monto : " + monto + " comision : " + comision);
+		log.info("Actualizando: cuenta origen --> retiro bancario : "+ cuenta_origen 
+				+ " monto : " + monto + " comision : " + comision + " banco de destino " + codigo_bancario_destino);
 		
 		//.uri("/retiro/{numero_cuenta}/{monto}/{comision}")
 		
@@ -56,10 +77,11 @@ public class ProductoBancoClient {
 		pathVariable.put("numero_cuenta",cuenta_origen);
 		pathVariable.put("monto",Double.toString(monto));//Casteamos la cantidad para envia en el map
 		pathVariable.put("comision",Double.toString(comision));
+		pathVariable.put("codigo_bancario",codigo_bancario_destino);
 		
 		return productoBancoClient
 					.put()
-				   .uri("/retiro/{numero_cuenta}/{monto}/{comision}",pathVariable)
+				   .uri("/retiro/{numero_cuenta}/{monto}/{comision}/{codigo_bancario}",pathVariable)
 				   .accept(MediaType.APPLICATION_JSON)
 				   .contentType(MediaType.APPLICATION_JSON)
 				   .retrieve()
@@ -73,7 +95,7 @@ public class ProductoBancoClient {
 	public Mono<CurrentAccount> despositoBancario(Double monto,String cuenta_origen,Double comision) {
 		
 		log.info("Actualizando: cuenta origen --> deposito bancario : "+ cuenta_origen + " monto : " + monto + " comision : " + comision);
-		
+		 
 		//.uri("/retiro/{numero_cuenta}/{monto}/{comision}")
 		
 		

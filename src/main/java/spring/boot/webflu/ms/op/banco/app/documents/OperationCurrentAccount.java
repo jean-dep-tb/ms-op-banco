@@ -35,6 +35,9 @@ public class OperationCurrentAccount {
 	private double montoPago;
 	
 	private Double comision = 0.0;
+	
+	@NotEmpty
+	private String codigo_bancario_destino;
 
 	public OperationCurrentAccount() {
 		

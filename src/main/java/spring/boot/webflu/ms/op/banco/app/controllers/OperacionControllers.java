@@ -3,7 +3,6 @@ package spring.boot.webflu.ms.op.banco.app.controllers;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +26,6 @@ public class OperacionControllers {
 
 	@Autowired
 	private OperacionService productoService;
-
-	@Autowired
-	private TipoOperacionService tipoProductoService;
 
 	//Muestra todos las operaciones existentes
 	@GetMapping
@@ -56,7 +52,7 @@ public class OperacionControllers {
 	}
 	
 	//Realiza una Transaccion(RETIROS) 
-	//guardando en el microservicio operaciones(movimientos) 
+	//guardando en el microservicio op-banco(movimientos)
 	// Y Actualiza el saldo de la tarjeta(retiro)
 	//mayor a 2 transacciones ya sea deposito o retiro, se les cobrara un monto de comision por tipo de tarjeta
 	@PostMapping("/retiro")
@@ -101,8 +97,8 @@ public class OperacionControllers {
 	
 	//Muestra todos los movimientos bancarios por cliente y numero tarjeta(cuenta de ahorros)
 	@GetMapping("/MovimientosBancarios/{dni}/{numTarjeta}")
-	public Flux<OperationCurrentAccount> movimientosBancarios(@PathVariable String dni, @PathVariable String numTarjeta) {
-		Flux<OperationCurrentAccount> oper = productoService.consultaMovimientos(dni, numTarjeta);
+	public Flux<OperationCurrentAccount> movimientosBancarios(@PathVariable String dni, @PathVariable String numTarjeta,@PathVariable String codigo_bancario) {
+		Flux<OperationCurrentAccount> oper = productoService.consultaMovimientos(dni, numTarjeta,codigo_bancario);
 		return oper;
 	}
 	

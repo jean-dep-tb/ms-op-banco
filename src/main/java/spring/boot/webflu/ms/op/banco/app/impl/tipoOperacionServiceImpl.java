@@ -9,7 +9,7 @@ import spring.boot.webflu.ms.op.banco.app.documents.TypeOperation;
 import spring.boot.webflu.ms.op.banco.app.service.TipoOperacionService;
 
 @Service
-public class tipoOperacionServiceImpl implements TipoOperacionService{
+public class TipoOperacionServiceImpl implements TipoOperacionService{
 	
 	@Autowired
 	public TipoOperacionDao  tipoProductoDao;

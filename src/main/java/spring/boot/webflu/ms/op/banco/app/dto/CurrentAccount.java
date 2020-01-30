@@ -28,7 +28,7 @@ public class CurrentAccount {
 	private String usuario;
 	private String clave;
 	//
-
+	private String codigo_bancario;
 }
 
 

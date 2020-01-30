@@ -1,18 +1,10 @@
 package spring.boot.webflu.ms.op.banco.app.impl;
 
 import java.util.Date;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.reactive.function.client.WebClient;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import spring.boot.webflu.ms.op.banco.app.client.ProductoBancoClient;
@@ -23,7 +15,6 @@ import spring.boot.webflu.ms.op.banco.app.documents.TypeOperation;
 import spring.boot.webflu.ms.op.banco.app.dto.CurrentAccount;
 import spring.boot.webflu.ms.op.banco.app.exception.RequestException;
 import spring.boot.webflu.ms.op.banco.app.service.OperacionService;
-import spring.boot.webflu.ms.op.banco.app.service.TipoOperacionService;
 
 @Service
 public class OperacionServiceImpl implements OperacionService {
@@ -37,9 +28,6 @@ public class OperacionServiceImpl implements OperacionService {
 
 	@Autowired
 	public OperacionDao tipoProductoDao;
-
-	@Autowired
-	private TipoOperacionService tipoProductoService;
 	
 	@Autowired
 	private ProductoBancoClient productoBancoClient;
@@ -68,17 +56,12 @@ public class OperacionServiceImpl implements OperacionService {
 	@Override
 	public Mono<OperationCurrentAccount> saveOperacionCuentaCuenta(OperationCurrentAccount operacion) {
 		
-		//consultar al ms-cuenta-banco las cuentas del cliente
-		
-		Mono<CurrentAccount> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen());
+		//OBTENER LA CUENTA DE BANCO
+		Mono<CurrentAccount> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen(),operacion.getCodigo_bancario_destino());
 		log.info("datos cliente  --->> "+oper1.map(p -> {
 			return p.toString();
 		}));
-		
-		//consultar al ms-cuenta-banco
-//		Mono<CurrentAccount> oper1 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoBancario/")
-//				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build().get()
-//				.uri("/numero_cuenta/" + operacion.getCuenta_origen()).retrieve().bodyToMono(CurrentAccount.class).log();
+
 
 		/*
 			tipo producto
@@ -114,18 +97,16 @@ public class OperacionServiceImpl implements OperacionService {
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("7")
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("8")) {
 
-				if (c1.getSaldo() == 20) {
+				if (c1.getSaldo() == 100) {
 
 					throw new RequestException(
-							"Ya no puede realizar retiros, debe tener un monton minimo" + " de S/.20 en su cuenta.");
+							"NO PUEDE REALIZAR RETIROS, MONTO MINIMO EN LA CUENTA S/.100");
 				}
-				
-				//CUANTO SERIA LA COMISION
 				
 			}
 			
 			//consultar todso los moviemientos realizados
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
 					.count();
 			
 			return valor.flatMap(p -> {
@@ -136,32 +117,18 @@ public class OperacionServiceImpl implements OperacionService {
 				
 				//REALIZAR UN RETIRNO EN EL MS-PRODUCTO BANCARIO
 				Mono<CurrentAccount> oper2 = productoBancoClient
-						.retiroBancario(operacion.getCuenta_origen(),operacion.getMontoPago(),operacion.getComision());
+						.retiroBancario(operacion.getCuenta_origen(),operacion.getMontoPago(),operacion.getComision(),operacion.getCodigo_bancario_destino());
 				
 				System.out.println("paso el metodo");
-				
-				//Mono<CurrentAccount> oper2 = productoBancoClient.retiroBancario(operacion);
-				
-//				Mono<CurrentAccount> oper2 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoBancario/")
-//						.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build()
-//						.put().uri("/retiro/" + operacion.getCuenta_origen() + "/" + operacion.getMontoPago() + "/"
-//								+ operacion.getComision()).retrieve().bodyToMono(CurrentAccount.class).log();
 
 				return oper2.flatMap(c -> {
 
 					if (c.getNumero_cuenta() == null) {
 						return Mono.empty();
 					}
-
 				
-				//REALIZAR UN PAGO DE UNA CUENTA DE CREDITO
-					
-				Mono<CurrentAccount> oper3 = productoBancoCreditoClient.despositoBancario(operacion.getMontoPago(),operacion.getCuenta_destino());
-					
-//				Mono<CurrentAccount> oper3 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoCredito/")
-//						.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build()
-//						.put().uri("/pago/" + operacion.getCuenta_destino() + "/" + operacion.getMontoPago())
-//						.retrieve().bodyToMono(CurrentAccount.class).log();
+				//REALIZAR UN PAGO DE UNA CUENTA DE CREDITO					
+				Mono<CurrentAccount> oper3 = productoBancoCreditoClient.despositoBancario(operacion.getMontoPago(),operacion.getCuenta_destino(),operacion.getCodigo_bancario_destino());
 							
 				return oper3.flatMap(d -> {
 
@@ -185,39 +152,43 @@ public class OperacionServiceImpl implements OperacionService {
 	@Override
 	public Mono<OperationCurrentAccount> saveOperacionRetiro(OperationCurrentAccount operacion) {
 		
-		Mono<CurrentAccount> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen());
-		
-//		Mono<CurrentAccount> oper1 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoBancario/")
-//				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build().get()
-//				.uri("/numero_cuenta/" + operacion.getCuenta_origen()).retrieve().bodyToMono(CurrentAccount.class).log();
+		Mono<CurrentAccount> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen(),operacion.getCodigo_bancario_destino());
 
 		return oper1.flatMap(c1 -> {
-			if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("1")) {
+			if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("1")) { //ahorro
+				
+				comision = 2.0;
 
-				comision = 2.5;
+			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("2")) {//corriente
 
-			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("2")) {
+				comision = 3.0;
 
-				comision = 3.5;
+			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("3")) {//plazo fijo
 
-			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("3")) {
+				comision = 4.0;
 
-				comision = 4.5;
-
+				//4 cuenta ahorro personal VIP
+				//5 cuenta corriente personal VIP
+				//6 empresarial PYME 
+				//7 empresarial Corporative
+				//8 cuenta plazo fijo VIP
 			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("4")
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("5")
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("6")
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("7")
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("8")) {
 
-				if (c1.getSaldo() == 20) {
+				if (c1.getSaldo() == 100) {
 
 					throw new RequestException(
-							"Ya no puede realizar retiros, debe tener un monton minimo" + " de S/.20 en su cuenta.");
+							"NO PUEDE REALIZAR RETIROS, MONTO MINIMO EN LA CUENTA S/.100");
 				}
 			}
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen())
+			
+			//CONTAR EL NUMERO DE MOVIMIENTOS
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
 					.count();
+			
 			return valor.flatMap(p -> {
 				// NUMERO DE COMISIONES
 				if (p > 2) {
@@ -226,13 +197,7 @@ public class OperacionServiceImpl implements OperacionService {
 				
 				//REALIZAR UN RETIRNO EN EL MS-PRODUCTO BANCARIO
 				Mono<CurrentAccount> oper2 = productoBancoClient
-						.retiroBancario(operacion.getCuenta_origen(),operacion.getMontoPago(),operacion.getComision());
-								
-//				Mono<CurrentAccount> oper2 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoBancario/")
-//						.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build().put()
-//						.uri("/retiro/" + operacion.getCuenta_origen() + "/" + operacion.getMontoPago() + "/"
-//								+ operacion.getComision())
-//						.retrieve().bodyToMono(CurrentAccount.class).log();
+						.retiroBancario(operacion.getCuenta_origen(),operacion.getMontoPago(),operacion.getComision(),operacion.getCodigo_bancario_destino());
 								
 				return oper2.flatMap(c -> {
 
@@ -255,56 +220,43 @@ public class OperacionServiceImpl implements OperacionService {
 	@Override
 	public Mono<OperationCurrentAccount> saveOperacionDeposito(OperationCurrentAccount operacion) {
 		
-		//consumir otros microservicio - cuenta bancaria
-		Mono<CurrentAccount> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen());
-			
-//		Mono<CurrentAccount> oper1 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoBancario/")
-//				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build().get()
-//				.uri("/numero_cuenta/" + operacion.getCuenta_origen()).retrieve().bodyToMono(CurrentAccount.class).log();
-		
-		
+		//PARA OBTENER LA CUENTA DE BANCO - CUENTA BANCARIA
+		Mono<CurrentAccount> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen(),operacion.getCodigo_bancario_destino());
 		
 		return oper1.flatMap(c1 -> {
+			
 			if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("1")) {
-				comision = 2.5;
+				comision = 2.0;
 
 			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("2")) {
-				comision = 3.5;
+				comision = 3.0;
 
 			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("3")) {
-				comision = 4.5;
+				comision = 4.0;
 			}
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen())
+			
+			//CONSULTAR EL NUMERO DE OPERACIONES
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
 					.count();
+			
 			return valor.flatMap(p -> {
 				if (p > 2) {
+					//ASIGNA LA COMISION
 					operacion.setComision(comision);
 				}
-				
+				//REALIZA EL DEPOSITO EN LA CUENTA DE BANCO
 				Mono<CurrentAccount> oper = productoBancoClient
 						.despositoBancario(operacion.getMontoPago(),operacion.getCuenta_origen(),operacion.getComision());
 				
-				System.out.println("paso el metodo");
-				
-//				Mono<CurrentAccount> oper = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoBancario/")
-//						.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build().put()
-//						.uri("/deposito/" + operacion.getCuenta_origen() + "/" + operacion.getMontoPago() + "/"
-//								+ operacion.getComision())
-//						.retrieve().bodyToMono(CurrentAccount.class).log();
-				
-				
+				System.out.println("paso el metodo");			
 				
 				return oper.flatMap(c -> {
 					if (c.getNumero_cuenta() == null) {
-						return Mono.error(new InterruptedException("No existe Numero de tarjeta"));
+						return Mono.error(new InterruptedException("TARGETA INVALIDA"));
 					}
 
 					TypeOperation tipo = new TypeOperation();
 
-					/*
-					 * tipo.setIdTipo(operacion.getTipoOperacion().getIdTipo());
-					 * tipo.setDescripcion(operacion.getTipoOperacion().getDescripcion());
-					 */
 					tipo.setIdTipo("1");
 					tipo.setDescripcion("Deposito");
 					operacion.setTipoOperacion(tipo);
@@ -323,9 +275,9 @@ public class OperacionServiceImpl implements OperacionService {
 	}
 
 	@Override
-	public Flux<OperationCurrentAccount> consultaMovimientos(String dni, String numTarjeta) {
+	public Flux<OperationCurrentAccount> consultaMovimientos(String dni, String numTarjeta, String codigo_bancario) {
 
-		return productoDao.consultaMovimientos(dni, numTarjeta);
+		return productoDao.consultaMovimientos(dni, numTarjeta,codigo_bancario);
 	}
 	
 	@Override
