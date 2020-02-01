@@ -14,58 +14,38 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Mono;
-import spring.boot.webflu.ms.op.banco.app.documents.OperationCurrentAccount;
-import spring.boot.webflu.ms.op.banco.app.dto.CurrentAccount;
+import spring.boot.webflu.ms.op.banco.app.documents.OperacionCuentaBanco;
+import spring.boot.webflu.ms.op.banco.app.dto.CuentaBanco;
 
 @Service
 public class ProductoBancoClient {
 
-	private static final Logger log = LoggerFactory.getLogger(CurrentAccount.class);
+	private static final Logger log = LoggerFactory.getLogger(CuentaBanco.class);
 	
 	@Autowired
 	@Qualifier("productoBanco")
 	private WebClient productoBancoClient;
 	
-	//consumir de una cuenta de banco
-//	public Mono<CurrentAccount> findByNumeroCuenta(String num) {
-//		
-//		Map<String, String> pathVariable = new HashMap<String,String>();
-//		pathVariable.put("numero_cuenta",cuenta_origen);
-//		pathVariable.put("monto",);
-//		
-//		return productoBancoClient.get()
-//				.uri("/numero_cuenta/{num}/{codigo_bancario}",pathVariable)
-//				.accept(MediaType.APPLICATION_JSON)
-//				.retrieve()
-//				.bodyToMono(CurrentAccount.class);
-//		    	
-//	}
 	
-	public Mono<CurrentAccount> findByNumeroCuenta(String num,String codigo_bancario_destino) {
+	public Mono<CuentaBanco> findByNumeroCuenta(String num,String codigo_bancario) {
 		
-		log.info("Actualizando: cuenta origen --> retiro --> numTargeta : "+ num + " codigo_bancario_destino : " + codigo_bancario_destino);
+		log.info("nuermo de cueta : "+ num + " codigo_bancario_destino : " + codigo_bancario);
 		
 		Map<String, String> pathVariable = new HashMap<String,String>();
 		pathVariable.put("num",num);
-		pathVariable.put("codigo_bancario",codigo_bancario_destino);
+		pathVariable.put("codigo_bancario",codigo_bancario);
 		
 		return productoBancoClient.get()
 				.uri("/numero_cuenta/{num}/{codigo_bancario}",pathVariable)
 				.accept(MediaType.APPLICATION_JSON)
 				.retrieve()
-				.bodyToMono(CurrentAccount.class);
+				.bodyToMono(CuentaBanco.class);
 		    	
 	}
 	
-//	Mono<CurrentAccount> oper2 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoBancario/")
-//			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build()
-//			.put().uri("/retiro/" + operacion.getCuenta_origen() + "/" + operacion.getMontoPago() + "/"
-//					+ operacion.getComision()).retrieve().bodyToMono(CurrentAccount.class).log();
-	
-	
 	//consumir de la cuenta de banco
 	//public Mono<CurrentAccount> retiroBancario(OperationCurrentAccount op) {
-	public Mono<CurrentAccount> retiroBancario(String cuenta_origen,Double monto,Double comision,String codigo_bancario_destino) {
+	public Mono<CuentaBanco> retiroBancario(String cuenta_origen,Double monto,Double comision,String codigo_bancario_destino) {
 		
 		log.info("Actualizando: cuenta origen --> retiro bancario : "+ cuenta_origen 
 				+ " monto : " + monto + " comision : " + comision + " banco de destino " + codigo_bancario_destino);
@@ -85,14 +65,14 @@ public class ProductoBancoClient {
 				   .accept(MediaType.APPLICATION_JSON)
 				   .contentType(MediaType.APPLICATION_JSON)
 				   .retrieve()
-				   .bodyToMono(CurrentAccount.class).log();		
+				   .bodyToMono(CuentaBanco.class).log();		
 		
 	}
 	
 	
 	//consumir de la cuenta de banco
 	//public Mono<CurrentAccount> retiroBancario(OperationCurrentAccount op) {
-	public Mono<CurrentAccount> despositoBancario(Double monto,String cuenta_origen,Double comision) {
+	public Mono<CuentaBanco> despositoBancario(Double monto,String cuenta_origen,Double comision,String codigo_bancario_destino) {
 		
 		log.info("Actualizando: cuenta origen --> deposito bancario : "+ cuenta_origen + " monto : " + monto + " comision : " + comision);
 		 
@@ -103,14 +83,15 @@ public class ProductoBancoClient {
 		pathVariable.put("numero_Cuenta",cuenta_origen);
 		pathVariable.put("monto",Double.toString(monto));//Casteamos la cantidad para envia en el map
 		pathVariable.put("comision",Double.toString(comision));
+		pathVariable.put("codigo_bancario",codigo_bancario_destino);
 		
 		return productoBancoClient
 					.put()
-				   .uri("/deposito/{numero_Cuenta}/{monto}/{comision}",pathVariable)
+				   .uri("/deposito/{numero_Cuenta}/{monto}/{comision}/{codigo_bancario}",pathVariable)
 				   .accept(MediaType.APPLICATION_JSON)
 				   .contentType(MediaType.APPLICATION_JSON)
 				   .retrieve()
-				   .bodyToMono(CurrentAccount.class).log();		
+				   .bodyToMono(CuentaBanco.class).log();		
 		
 	}
 	

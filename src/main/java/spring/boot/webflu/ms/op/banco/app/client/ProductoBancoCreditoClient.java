@@ -14,38 +14,36 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Mono;
-import spring.boot.webflu.ms.op.banco.app.dto.CurrentAccount;
+import spring.boot.webflu.ms.op.banco.app.dto.CuentaBanco;
 
 @Service
 public class ProductoBancoCreditoClient {
 
-	private static final Logger log = LoggerFactory.getLogger(CurrentAccount.class);
+	private static final Logger log = LoggerFactory.getLogger(CuentaBanco.class);
 	
 	@Autowired
 	@Qualifier("productoBancoCredito")
 	private WebClient productoBancoCreditoClient;
 	
-//	Mono<CurrentAccount> oper3 = WebClient.builder().baseUrl("http://gateway:8099/producto_bancario/api/ProductoCredito/")
-//			.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).build()
-//			.put().uri("/pago/" + operacion.getCuenta_destino() + "/" + operacion.getMontoPago())
-//			.retrieve().bodyToMono(CurrentAccount.class).log();
-	
 	//producto credito
-	public Mono<CurrentAccount> despositoBancario(Double monto,String cuenta_destino,String codigo_bancario_destino) {
+	public Mono<CuentaBanco> despositoBancario(Double monto,String cuenta_destino,String codigo_bancario_destino) {
 		
 		Map<String, String> pathVariable = new HashMap<String,String>();
 		pathVariable.put("monto",Double.toString(monto));
 		pathVariable.put("numero_cuenta",cuenta_destino);
 		pathVariable.put("codigo_bancario",codigo_bancario_destino);
 		
-		log.info("Actualizando: cuenta origen ---> deposito-credito: "+ cuenta_destino," monto : " + monto + "banco destino" + codigo_bancario_destino);	
+		System.out.println("MONTO " + monto);
+		System.out.println("BANCO " + codigo_bancario_destino);
+		
+		log.info("Actualizando: cuenta origen ---> deposito-credito: ->> "+ cuenta_destino +" monto : " + monto + "banco destino" + codigo_bancario_destino);	
 		
 		return productoBancoCreditoClient.put()
 				   .uri("/pago/{numero_cuenta}/{monto}/{codigo_bancario}",pathVariable)
 				   .accept(MediaType.APPLICATION_JSON)
 				   .contentType(MediaType.APPLICATION_JSON)
 				   .retrieve()
-				   .bodyToMono(CurrentAccount.class);		
+				   .bodyToMono(CuentaBanco.class);		
 	}
 	
 }

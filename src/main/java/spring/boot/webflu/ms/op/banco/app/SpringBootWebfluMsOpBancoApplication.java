@@ -12,20 +12,20 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 import reactor.core.publisher.Flux;
-import spring.boot.webflu.ms.op.banco.app.documents.OperationCurrentAccount;
-import spring.boot.webflu.ms.op.banco.app.documents.TypeOperation;
-import spring.boot.webflu.ms.op.banco.app.service.OperacionService;
-import spring.boot.webflu.ms.op.banco.app.service.TipoOperacionService;
+import spring.boot.webflu.ms.op.banco.app.documents.OperacionCuentaBanco;
+import spring.boot.webflu.ms.op.banco.app.documents.TipoOperacionBanco;
+import spring.boot.webflu.ms.op.banco.app.service.OperacionBancoService;
+import spring.boot.webflu.ms.op.banco.app.service.TipoOperacionBancoService;
 
 @EnableEurekaClient
 @SpringBootApplication
 public class SpringBootWebfluMsOpBancoApplication implements CommandLineRunner{
 	
 	@Autowired
-	private OperacionService operacionService;
+	private OperacionBancoService operacionService;
 
 	@Autowired
-	private TipoOperacionService tipoOperacionService;
+	private TipoOperacionBancoService tipoOperacionService;
 	
 	@Autowired
 	private ReactiveMongoTemplate mongoTemplate;
@@ -42,9 +42,9 @@ public class SpringBootWebfluMsOpBancoApplication implements CommandLineRunner{
 		mongoTemplate.dropCollection("Operaciones").subscribe();
 		mongoTemplate.dropCollection("TipoProducto").subscribe();
 		
-		TypeOperation deposito = new TypeOperation("1","Deposito");
-		TypeOperation retiro = new TypeOperation("2","Retiro");
-		TypeOperation entrecuentas = new TypeOperation("3","EntreCuentas");
+		TipoOperacionBanco deposito = new TipoOperacionBanco("1","Deposito");
+		TipoOperacionBanco retiro = new TipoOperacionBanco("2","Retiro");
+		TipoOperacionBanco entrecuentas = new TipoOperacionBanco("3","EntreCuentas");
 		
 		
 		
@@ -55,9 +55,9 @@ public class SpringBootWebfluMsOpBancoApplication implements CommandLineRunner{
 		}).thenMany(					
 				Flux.just(
 						//return serviceCredito.saveProducto(procredito);
-						new OperationCurrentAccount("47305710","900001","100001", new Date(),deposito,1000.00,10.0),
-						new OperationCurrentAccount("47305710","900002","100004", new Date(),retiro,2000.00,20.0),
-						new OperationCurrentAccount("47305710","900003","100003", new Date(),entrecuentas,3000.00,30.0)
+						new OperacionCuentaBanco("47305710","900001","100001", new Date(),deposito,1000.00,10.0,"bcp"),
+						new OperacionCuentaBanco("47305710","900002","100004", new Date(),retiro,2000.00,20.0,"bbva"),
+						new OperacionCuentaBanco("47305710","900003","100003", new Date(),entrecuentas,3000.00,30.0,"bcp")
 						
 						)					
 					.flatMap(operacion -> {
