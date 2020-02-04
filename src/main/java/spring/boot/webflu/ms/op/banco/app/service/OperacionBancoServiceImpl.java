@@ -54,7 +54,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 	}
 
 	@Override
-	public Mono<OperacionCuentaBanco> saveOperacionCuentaCuenta(OperacionCuentaBanco operacion) {
+	public Mono<OperacionCuentaBanco> saveOperacionCuentaCuentaCredito(OperacionCuentaBanco operacion) {
 		
 		//OBTENER LA CUENTA DE BANCO
 		Mono<CuentaBanco> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen(),operacion.getCodigo_bancario_origen());
@@ -108,7 +108,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 			}
 			
 			//consultar todso los moviemientos realizados
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
 					.count();
 			
 			return valor.flatMap(p -> {
@@ -156,6 +156,87 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 			});
 		});
 	}
+	
+	@Override
+	public Mono<OperacionCuentaBanco> operacionCuentaCuenta(OperacionCuentaBanco operacion) {
+		
+		Mono<CuentaBanco> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen(),operacion.getCodigo_bancario_origen());
+		log.info("datos cliente  --->> "+oper1.map(p -> {
+			return p.toString();
+		}));
+		
+		return oper1.flatMap(c1 -> {
+			if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("1")) {
+
+				comision = 2.5;
+
+			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("2")) {
+
+				comision = 3.5;
+
+			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("3")) {
+
+				comision = 4.5;
+
+			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("4")
+					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("5")
+					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("6")
+					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("7")
+					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("8")) {
+
+				if (c1.getSaldo() == 20) {
+
+					throw new RequestException(
+							"Ya no puede realizar retiros, debe tener un monton minimo" + " de S/.20 en su cuenta.");
+				}
+			}
+			
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
+					.count();
+			
+			return valor.flatMap(p -> {
+				
+				if (p > 2) {
+					operacion.setComision(comision);
+				}
+				
+				//REALIZAR UN RETIRNO EN EL MS-PRODUCTO BANCARIO
+				Mono<CuentaBanco> oper2 = productoBancoClient
+						.retiroBancario(operacion.getCuenta_origen(),operacion.getMontoPago(),operacion.getComision(),operacion.getCodigo_bancario_origen());
+				
+				return oper2.flatMap(c->{
+					
+					if (c.getNumero_cuenta() == null) {
+						return Mono.empty();
+					}
+					
+					//REALIZAR UN PAGO DESTINO
+					Mono<CuentaBanco> oper3 = productoBancoClient
+							.despositoBancario(operacion.getMontoPago(),operacion.getCuenta_destino(),operacion.getComision(),operacion.getCodigo_bancario_destino());
+					
+					return oper3.flatMap(o -> {
+						
+						if (c.getNumero_cuenta() == null) {
+							return Mono.empty();
+						}
+						
+						TipoOperacionBanco tipo = new TipoOperacionBanco();
+						tipo.setIdTipo("4");
+						tipo.setDescripcion("CUENTA A CUENTA");
+						operacion.setTipoOperacion(tipo);
+
+						return productoDao.save(operacion);
+						
+					});
+								
+				});
+				
+				
+	
+			});
+			
+		});
+	}
 
 	@Override
 	public Mono<OperacionCuentaBanco> saveOperacionRetiro(OperacionCuentaBanco operacion) {
@@ -198,7 +279,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 			}
 			
 			//CONTAR EL NUMERO DE MOVIMIENTOS
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
 					.count();
 			
 			return valor.flatMap(p -> {
@@ -239,14 +320,19 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 		
 		return oper1.flatMap(c1 -> {
 			
-			if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("1")) {
+			if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("1")) { //ahorro
 				comision = 2.0;
 
-			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("2")) {
+			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("2")) {//corriente
 				comision = 3.0;
 
-			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("3")) {
+			} else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("3")) {//plazo fijo
 				comision = 4.0;
+				//4 cuenta ahorro personal VIP
+				//5 cuenta corriente personal VIP
+				//6 empresarial PYME 
+				//7 empresarial Corporative
+				//8 cuenta plazo fijo VIP
 			}else if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("4")
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("5")
 					|| c1.getTipoProducto().getIdTipo().equalsIgnoreCase("6")
@@ -263,7 +349,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 			}
 			
 			//CONSULTAR EL NUMERO DE OPERACIONES
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
 					.count();
 			
 			//Mono<Long> valor = productoDao.viewDniCliente(operacion.getDni()).count();
@@ -309,7 +395,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 	@Override
 	public Flux<OperacionCuentaBanco> consultaMovimientos(String dni, String numTarjeta, String codigo_bancario) {
 
-		return productoDao.consultaMovimientos(dni, numTarjeta);
+		return productoDao.consultaMovimientos(dni, numTarjeta,codigo_bancario);
 	}
 	
 	@Override

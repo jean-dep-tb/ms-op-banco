@@ -11,8 +11,8 @@ public interface OperacionBancoDao extends ReactiveMongoRepository<OperacionCuen
 	@Query("{ 'dni' : ?0 }")
 	Flux<OperacionCuentaBanco> viewDniCliente(String dni);
 
-	@Query("{ 'dni' : ?0 , 'cuenta_origen' : ?1 }")
-	Flux<OperacionCuentaBanco> consultaMovimientos(String dni, String numTarjeta );
+	@Query("{ 'dni' : ?0 , 'cuenta_origen' : ?1, 'codigo_bancario_origen' : ?2 }")
+	Flux<OperacionCuentaBanco> consultaMovimientos(String dni, String numTarjeta, String codigo_bancario);
 	
 	@Query("{'fechaOperacion' : {'$gt' : ?0, '$lt' : ?1}}")
 	Mono<OperacionCuentaBanco> consultaComisiones(Date from, Date to);

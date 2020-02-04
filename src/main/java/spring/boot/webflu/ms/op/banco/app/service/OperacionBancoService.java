@@ -18,13 +18,15 @@ public interface OperacionBancoService {
 	Mono<OperacionCuentaBanco> saveOperacionDeposito(OperacionCuentaBanco producto);
 
 	Flux<OperacionCuentaBanco> findAllOperacionByDniCliente(String dni);
-
+	
 	/* Flux<Operacion> saveOperacionList(List<Operacion> producto); */
 
-	Flux<OperacionCuentaBanco> consultaMovimientos(String dni, String numeroTarjeta, String codigo_bancario);
+	Flux<OperacionCuentaBanco> consultaMovimientos(String dni, String numeroTarjeta, String codigo_bancario); //consultaMovimientos
 
-	Mono<OperacionCuentaBanco> saveOperacionCuentaCuenta(OperacionCuentaBanco operacion);
+	Mono<OperacionCuentaBanco> saveOperacionCuentaCuentaCredito(OperacionCuentaBanco operacion);
 
+	public Mono<OperacionCuentaBanco> operacionCuentaCuenta(OperacionCuentaBanco operacion);
+	
 	Mono<OperacionCuentaBanco> consultaComisiones(Date from, Date to);
 
 }

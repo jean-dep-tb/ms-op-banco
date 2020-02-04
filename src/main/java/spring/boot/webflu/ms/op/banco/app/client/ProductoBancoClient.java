@@ -71,7 +71,6 @@ public class ProductoBancoClient {
 	
 	
 	//consumir de la cuenta de banco
-	//public Mono<CurrentAccount> retiroBancario(OperationCurrentAccount op) {
 	public Mono<CuentaBanco> despositoBancario(Double monto,String cuenta_origen,Double comision,String codigo_bancario_destino) {
 		
 		log.info("Actualizando: cuenta origen --> deposito bancario : "+ cuenta_origen + " monto : " + monto + " comision : " + comision);

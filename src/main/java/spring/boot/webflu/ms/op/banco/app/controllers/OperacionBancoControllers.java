@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import spring.boot.webflu.ms.op.banco.app.documents.OperacionCuentaBanco;
@@ -67,7 +66,13 @@ public class OperacionBancoControllers {
 	@PostMapping("/CuentaBancoACredito") //Cuenta_a_Cuenta
 	public Mono<OperacionCuentaBanco> operacionCuentaBancoACredito(@RequestBody OperacionCuentaBanco producto) {
 		//System.out.println(producto.toString());
-		return productoService.saveOperacionCuentaCuenta(producto);
+		return productoService.saveOperacionCuentaCuentaCredito(producto);
+	}
+	
+	@PostMapping("/cuentaACuenta")
+	public Mono<OperacionCuentaBanco> operacionCuentaACuenta(@RequestBody OperacionCuentaBanco oper) {
+		//System.out.println(producto.toString());
+		return productoService.operacionCuentaCuenta(oper);
 	}
 
 	//GUARDA UNA OPERACION BANCO
@@ -87,8 +92,8 @@ public class OperacionBancoControllers {
 	//MOVIMIENTOS BANCARIOS POR CLIENTES Y NRO TARGETA
 	@GetMapping("/MovimientosBancarios/{dni}/{numTarjeta}")
 	public Flux<OperacionCuentaBanco> movimientosBancarios(@PathVariable String dni, @PathVariable String numTarjeta,@PathVariable String codigo_bancario) {
-		Flux<OperacionCuentaBanco> oper = productoService.consultaMovimientos(dni, numTarjeta,codigo_bancario);
-		return oper;
+		Flux<OperacionCuentaBanco> operacion = productoService.consultaMovimientos(dni, numTarjeta,codigo_bancario);
+		return operacion;
 	}
 	
 	//COMISION POR TIEMPO

@@ -44,11 +44,12 @@ public class SpringBootWebfluMsOpBancoApplication implements CommandLineRunner{
 		
 		TipoOperacionBanco deposito = new TipoOperacionBanco("1","Deposito");
 		TipoOperacionBanco retiro = new TipoOperacionBanco("2","Retiro");
-		TipoOperacionBanco entrecuentas = new TipoOperacionBanco("3","EntreCuentas");
+		TipoOperacionBanco cuentaCredito = new TipoOperacionBanco("3","CuentaCredito");
+		TipoOperacionBanco cuentaCuenta = new TipoOperacionBanco("4","CuentaCuenta");
 		
 		
 		
-		Flux.just(deposito,retiro,entrecuentas)
+		Flux.just(deposito,retiro,cuentaCredito,cuentaCuenta)
 		.flatMap(tipoOperacionService::saveTipoProducto)
 		.doOnNext(c -> {
 			log.info("Tipo de producto creado: " +  c.getDescripcion() + ", Id: " + c.getIdTipo());
@@ -57,7 +58,8 @@ public class SpringBootWebfluMsOpBancoApplication implements CommandLineRunner{
 						//return serviceCredito.saveProducto(procredito);
 						new OperacionCuentaBanco("47305710","900001","100001", new Date(),deposito,1000.00,10.0,"bcp"),
 						new OperacionCuentaBanco("47305710","900002","100004", new Date(),retiro,2000.00,20.0,"bbva"),
-						new OperacionCuentaBanco("47305710","900003","100003", new Date(),entrecuentas,3000.00,30.0,"bcp")
+						new OperacionCuentaBanco("47305710","900003","100003", new Date(),cuentaCredito,3000.00,30.0,"bcp"),
+						new OperacionCuentaBanco("47305710","900001","100003", new Date(),cuentaCuenta,5000.00,40.0,"bcp")
 						
 						)					
 					.flatMap(operacion -> {
