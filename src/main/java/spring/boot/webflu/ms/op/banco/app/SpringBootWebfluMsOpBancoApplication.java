@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
@@ -17,6 +18,7 @@ import spring.boot.webflu.ms.op.banco.app.documents.TipoOperacionBanco;
 import spring.boot.webflu.ms.op.banco.app.service.OperacionBancoService;
 import spring.boot.webflu.ms.op.banco.app.service.TipoOperacionBancoService;
 
+@EnableCircuitBreaker
 @EnableEurekaClient
 @SpringBootApplication
 public class SpringBootWebfluMsOpBancoApplication implements CommandLineRunner{

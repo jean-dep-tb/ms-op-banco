@@ -108,7 +108,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 			}
 			
 			//consultar todso los moviemientos realizados
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigoBanco())
 					.count();
 			
 			return valor.flatMap(p -> {
@@ -127,7 +127,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 
 				return oper2.flatMap(c -> {
 
-					if (c.getNumero_cuenta() == null) {
+					if (c.getNumeroCuenta() == null) {
 						return Mono.empty();
 					}
 					
@@ -140,7 +140,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 				
 				return oper3.flatMap(d -> {
 
-					if (c.getNumero_cuenta() == null) {
+					if (c.getNumeroCuenta() == null) {
 						return Mono.empty();
 					}
 					//PARA QUE REGISTRE UNA TRANSACCION
@@ -191,7 +191,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 				}
 			}
 			
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigoBanco())
 					.count();
 			
 			return valor.flatMap(p -> {
@@ -206,7 +206,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 				
 				return oper2.flatMap(c->{
 					
-					if (c.getNumero_cuenta() == null) {
+					if (c.getNumeroCuenta() == null) {
 						return Mono.empty();
 					}
 					
@@ -216,7 +216,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 					
 					return oper3.flatMap(o -> {
 						
-						if (c.getNumero_cuenta() == null) {
+						if (c.getNumeroCuenta() == null) {
 							return Mono.empty();
 						}
 						
@@ -279,7 +279,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 			}
 			
 			//CONTAR EL NUMERO DE MOVIMIENTOS
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigoBanco())
 					.count();
 			
 			return valor.flatMap(p -> {
@@ -295,7 +295,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 								
 				return oper2.flatMap(c -> {
 
-					if (c.getNumero_cuenta() == null) {
+					if (c.getNumeroCuenta() == null) {
 						return Mono.empty();
 					}
 					
@@ -319,6 +319,9 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 		Mono<CuentaBanco> oper1 = productoBancoClient.findByNumeroCuenta(operacion.getCuenta_origen(),operacion.getCodigo_bancario_origen());
 		
 		return oper1.flatMap(c1 -> {
+			
+			System.out.println("Datos cuenta : " + c1.toString());			
+			System.out.println("Datos tipo Cuenta : " + c1.getTipoProducto().toString());
 			
 			if (c1.getTipoProducto().getIdTipo().equalsIgnoreCase("1")) { //ahorro
 				comision = 2.0;
@@ -349,7 +352,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 			}
 			
 			//CONSULTAR EL NUMERO DE OPERACIONES
-			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigo_bancario())
+			Mono<Long> valor = productoDao.consultaMovimientos(operacion.getDni(), operacion.getCuenta_origen(),c1.getCodigoBanco())
 					.count();
 			
 			//Mono<Long> valor = productoDao.viewDniCliente(operacion.getDni()).count();
@@ -367,7 +370,7 @@ public class OperacionBancoServiceImpl implements OperacionBancoService {
 				System.out.println("paso el metodo");			
 				
 				return oper.flatMap(c -> {
-					if (c.getNumero_cuenta() == null) {
+					if (c.getNumeroCuenta() == null) {
 						return Mono.error(new InterruptedException("TARGETA INVALIDA"));
 					}
 

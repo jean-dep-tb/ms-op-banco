@@ -20,7 +20,7 @@ public class CuentaBanco {
 	
 	private String id;
 	private String dni;
-	private String numero_cuenta;
+	private String numeroCuenta;
 	private TipoCuentaBanco tipoProducto;
 	private String fecha_afiliacion;
 	private String fecha_caducidad;
@@ -28,7 +28,8 @@ public class CuentaBanco {
 	private String usuario;
 	private String clave;
 	//
-	private String codigo_bancario;
+	private String codigoBanco;
+	
 }
 
 
