@@ -46,4 +46,20 @@ public class ProductoBancoCreditoClient {
 				   .bodyToMono(CuentaBanco.class);		
 	}
 	
+	public Mono<CuentaBanco> findByNumeroCuentaCredito(String numero_cuenta,String codigo_bancario) {
+		
+		log.info("NUMERO CTA CREDITO : "+ numero_cuenta + " BANCO DESTINO : " + codigo_bancario);
+		
+		Map<String, String> pathVariable = new HashMap<String,String>();
+		pathVariable.put("numero_cuenta",numero_cuenta);
+		pathVariable.put("codigo_bancario",codigo_bancario);
+		
+		return productoBancoCreditoClient.get()
+				.uri("/numero_cuenta/{numero_cuenta}/{codigo_bancario}",pathVariable)
+				.accept(MediaType.APPLICATION_JSON)
+				.retrieve()
+				.bodyToMono(CuentaBanco.class);
+		    	
+	}
+	
 }

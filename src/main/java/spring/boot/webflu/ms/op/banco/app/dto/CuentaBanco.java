@@ -30,6 +30,8 @@ public class CuentaBanco {
 	//
 	private String codigoBanco;
 	
+	
+	
 }
 
 

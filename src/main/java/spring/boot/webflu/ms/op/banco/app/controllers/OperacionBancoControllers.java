@@ -93,29 +93,29 @@ public class OperacionBancoControllers {
 	}
 	
 	@ApiOperation(value = "MOVIMIENTOS BANCARIOS POR CLIENTES Y NRO CUENTA", notes="")
-	@GetMapping("/MovimientosBancarios/{dni}/{numTarjeta}")
+	@GetMapping("/MovimientosBancarios/{dni}/{numTarjeta}/{codigo_bancario}")
 	public Flux<OperacionCuentaBanco> movimientosBancarios(@PathVariable String dni, @PathVariable String numTarjeta,@PathVariable String codigo_bancario) {
 		Flux<OperacionCuentaBanco> operacion = productoService.consultaMovimientos(dni, numTarjeta,codigo_bancario);
 		return operacion;
 	}
 	
-	@ApiOperation(value = "COMISION POR TIEMPO", notes="")
-	@GetMapping("consultaRangoFecha/{fecha}")
-	public Mono<ResponseEntity<OperacionCuentaBanco>> consultaMovimientosComisiones(@PathVariable String fecha) throws ParseException{
-
-			System.out.println("FECHA : " + fecha );
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
-			String f1 = fecha.split("&&")[0]+" 00:00:00.000+0000";
-			System.out.println(f1);
-			Date from = format.parse(f1);
-			Date to = format.parse(fecha.split("&&")[1]+" 00:00:00.000+0000");
-			System.out.println(to);			
-			System.out.println(format.format(from));
-			return productoService.consultaComisiones(from,to).map(p-> ResponseEntity.ok()
-					.contentType(MediaType.APPLICATION_JSON)
-					.body(p))
-					.defaultIfEmpty(ResponseEntity.notFound().build());
-		}
+//	@ApiOperation(value = "COMISION POR TIEMPO", notes="")
+//	@GetMapping("consultaRangoFecha/{fecha}")
+//	public Mono<ResponseEntity<OperacionCuentaBanco>> consultaMovimientosComisiones(@PathVariable String fecha) throws ParseException{
+//
+//			System.out.println("FECHA : " + fecha );
+//			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
+//			String f1 = fecha.split("&&")[0]+" 00:00:00.000+0000";
+//			System.out.println(f1);
+//			Date from = format.parse(f1);
+//			Date to = format.parse(fecha.split("&&")[1]+" 00:00:00.000+0000");
+//			System.out.println(to);			
+//			System.out.println(format.format(from));
+//			return productoService.consultaComisiones(from,to).map(p-> ResponseEntity.ok()
+//					.contentType(MediaType.APPLICATION_JSON)
+//					.body(p))
+//					.defaultIfEmpty(ResponseEntity.notFound().build());
+//		}
 	
 		
 }
